@@ -220,7 +220,7 @@ body {
  * --flow-space without specificity escalation.
  */
 .nx-prose {
-  max-width: 56rem;
+  max-width: 48rem;
   margin: 0 auto;
   padding: var(--nx-vsp-2xl) var(--nx-hsp-xl);
   font-size: var(--nx-text-body);
@@ -257,8 +257,9 @@ body {
   font-size: var(--nx-text-h2);
   line-height: var(--nx-leading-tight);
   font-weight: 700;
-  padding-block-start: var(--nx-vsp-xs);
-  border-block-start: 2px solid var(--nx-color-primary);
+  color: var(--nx-color-primary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--nx-color-muted);
 }
 
 .nx-prose :where(h3) {
@@ -334,13 +335,13 @@ body {
 
 .nx-prose :where(th, td) {
   padding: var(--nx-hsp-xs) var(--nx-hsp-sm);
-  border: 1px solid var(--nx-color-muted);
+  border-bottom: 1px solid var(--nx-color-muted);
   text-align: left;
 }
 
 .nx-prose :where(th) {
   font-weight: 600;
-  background: var(--nx-code-bg);
+  border-bottom: 2px solid var(--nx-color-muted);
 }
 
 /* Horizontal rule */
