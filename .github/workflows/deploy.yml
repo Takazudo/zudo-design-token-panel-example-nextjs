@@ -65,9 +65,10 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ]; then
             echo "deploy_branch=main" >> "$GITHUB_OUTPUT"
           else
-            # Cloudflare Pages branch names cannot contain slashes; replace with hyphens.
-            DEPLOY_BRANCH=$(echo "${{ github.head_ref }}" | tr '/' '-')
-            echo "deploy_branch=${DEPLOY_BRANCH}" >> "$GITHUB_OUTPUT"
+            # Use pr-<number> as the slug — Cloudflare Pages truncates branch alias
+            # subdomains to 28 chars, silently breaking the preview URL for any
+            # branch longer than that. pr-<n> is stable and short.
+            echo "deploy_branch=pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Ensure Cloudflare Pages project exists
