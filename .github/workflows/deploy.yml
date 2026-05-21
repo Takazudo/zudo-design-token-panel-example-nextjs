@@ -18,7 +18,7 @@ concurrency:
 
 env:
   # Pin: panel SHA deployed in this consumer — matches file:../zudo-design-token-panel dep
-  PANEL_PINNED_SHA: 1dde6de7a2a8a0cd75b6f5b3022e5b77a994134c
+  PANEL_PINNED_SHA: fcf42a1c93b70df1cde812e47b62921dbd1b564b
 
 jobs:
   build-and-deploy:
