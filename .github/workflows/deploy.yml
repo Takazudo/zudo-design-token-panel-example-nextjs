@@ -16,10 +16,6 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # Pin: panel SHA deployed in this consumer — matches file:../zudo-design-token-panel dep
-  PANEL_PINNED_SHA: 7341033c8fb29cb36bccd02ecc23fd1a01c856b8
-
 jobs:
   build-and-deploy:
     name: Build and deploy
@@ -36,19 +32,6 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-
-      - name: Clone panel sibling at pinned SHA
-        run: |
-          git clone https://github.com/Takazudo/zudo-design-token-panel.git ../zudo-design-token-panel
-          git -C ../zudo-design-token-panel checkout ${{ env.PANEL_PINNED_SHA }}
-
-      - name: Install panel workspace deps
-        working-directory: ../zudo-design-token-panel
-        run: pnpm install --frozen-lockfile
-
-      - name: Build panel package (generates dist/)
-        working-directory: ../zudo-design-token-panel
-        run: pnpm -F @takazudo/zudo-design-token-panel build
 
       - name: Install wrangler
         run: npm install -g wrangler@4

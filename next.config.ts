@@ -8,7 +8,7 @@ import remarkGfm from 'remark-gfm';
  * Next.js config for the Next + React 19 example app.
  *
  * Deliberately minimal: NO bundler aliases, NO Tailwind, NO design
- * system. The example proves @takazudo/zudo-design-token-panel works inside a
+ * system. The example proves @takazudo/zdtp works inside a
  * vanilla Next 15 App Router consumer that ships:
  *
  *   - real React 19 (no `react -> preact/compat` alias),

@@ -29,7 +29,7 @@
  * full zfb-tailwind parity in Wave 2 (framework-demo-parity #186).
  */
 
-import type { PanelConfig } from '@takazudo/zudo-design-token-panel';
+import type { PanelConfig } from '@takazudo/zdtp';
 import { defaultCluster } from './default-cluster';
 
 type TabConfig = PanelConfig['tabs'][number];

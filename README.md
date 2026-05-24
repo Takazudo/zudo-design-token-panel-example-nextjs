@@ -1,9 +1,9 @@
 # zudo-design-token-panel-example-nextjs
 
 A minimal Next.js 15 (App Router) + React 19 app demonstrating
-`@takazudo/zudo-design-token-panel` — host-config-driven panel mounted as a
+`@takazudo/zdtp` — host-config-driven panel mounted as a
 Preact island via a `'use client'` boundary, plus apply-pipeline round-trip
-via the bin sidecar (`design-token-panel-server`).
+via the bin sidecar (`zdtp-server`).
 
 Live demo: <https://zudo-design-token-panel-example-nextjs.pages.dev/>
 
@@ -49,7 +49,7 @@ Runs two processes via `concurrently`:
 | process | port  | role                                                                         |
 | ------- | ----- | ---------------------------------------------------------------------------- |
 | Next    | 44326 | the example site                                                             |
-| bin     | 24684 | `design-token-panel-server` — receives `/apply` POSTs, rewrites `tokens.css` |
+| bin     | 24684 | `zdtp-server` — receives `/apply` POSTs, rewrites `tokens.css` |
 
 Open <http://localhost:44326/> and run `window.nx.toggleDesignPanel()` in the
 browser console to show the panel.

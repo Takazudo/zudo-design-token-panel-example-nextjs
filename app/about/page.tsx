@@ -28,7 +28,7 @@ export default function AboutPage() {
           </div>
           <p className="nx-body" style={{ marginTop: 'var(--nx-vsp-md)' }}>
             The <code>examples/next</code> sub-package consumes{' '}
-            <code>@takazudo/zudo-design-token-panel</code> through its built
+            <code>@takazudo/zdtp</code> through its built
             artifact only — there are no deep imports into <code>dist/</code>,
             no bundler aliases, and no framework integration beyond the{' '}
             <code>&apos;use client&apos;</code> bootstrap component.
