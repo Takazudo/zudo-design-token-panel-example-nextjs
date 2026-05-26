@@ -286,6 +286,13 @@ export const defaultTabs: readonly TabConfig[] = [
             type: { kind: 'length', min: 1, max: 5, step: 0.25, unit: 'rem' },
           },
           {
+            id: 'nx-size-icon-sm',
+            cssVar: '--nx-size-icon-sm',
+            label: 'Icon SM',
+            default: '1rem',
+            type: { kind: 'length', min: 0.5, max: 2, step: 0.0625, unit: 'rem' },
+          },
+          {
             id: 'nx-size-icon-md',
             cssVar: '--nx-size-icon-md',
             label: 'Icon MD',
