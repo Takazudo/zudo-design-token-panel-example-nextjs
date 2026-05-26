@@ -22,7 +22,7 @@
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.2.6",
-    "@takazudo/zdtp": "0.1.0-next.3",
+    "@takazudo/zdtp": "0.2.0-next.1",
     "next": "^15.5.15",
     "preact": "^10.29.1",
     "react": "^19.2.5",
