@@ -17,3 +17,6 @@ test-results/
 
 # Environment
 .env*
+
+# git worktrees (local only)
+worktrees/
