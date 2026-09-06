@@ -28,10 +28,10 @@
  *     namespace is a configured field — different consumers can pick
  *     distinct values to prove the contract is host-agnostic.
  *  3. Gate the panel module's dynamic import on the same probes the Astro
- *     adapter uses: an existing `wasVisible()` flag or any persisted v2
- *     overrides. When neither is set, the panel module stays out of the
- *     initial bundle and only loads when the user calls a `window.<ns>.*`
- *     helper from the console.
+ *     adapter uses: any of the package's declared flag signals, or any
+ *     persisted state payload in a readable envelope version. When none is
+ *     set, the panel module stays out of the initial bundle and only loads
+ *     when the user calls a `window.<ns>.*` helper from the console.
  *  4. After the dynamic import resolves, call `configurePanel(panelConfig)`
  *     on the freshly imported module BEFORE any other panel API runs, then
  *     call `reapplyPersistedOverrides()` so the panel applies persisted
@@ -53,7 +53,9 @@
  * The suffixes and value rules that decide whether to eager-load come from
  * the package's `@takazudo/zdtp/constants` sub-entry, which is a standalone
  * module that does NOT import the panel — so this static import leaves First
- * Load JS unchanged and keeps the panel itself lazy.
+ * Load JS unchanged and keeps the panel itself lazy. Both registries are
+ * iterated whole, so the gate covers every signal the installed package
+ * declares rather than a hand-picked subset.
  *
  * Deriving them (rather than hard-coding `-state-v2`, as this adapter used
  * to) is the migration the package's 0.5.1 notes prescribe: the readable
@@ -63,6 +65,7 @@
  * and `statePayloadActivates` below implements them.
  */
 
+import type { PanelConfig } from '@takazudo/zdtp';
 import {
   EAGER_LOAD_GATE_KEY_SUFFIXES,
   EAGER_LOAD_GATE_STATE_FAMILY,
@@ -121,17 +124,37 @@ function getAdapterState(win: AdapterWindow, key: string): DesignTokenPanelAdapt
   return state;
 }
 
-/**
- * The one literal is used BOTH to index the registry and to build the key, so
- * the accepted-values lookup can never drift from the key actually read; if
- * the package ever drops the suffix, this stops compiling.
- */
-const VISIBLE_SUFFIX = ':visible';
+type EagerLoadFlagSuffix = keyof typeof EAGER_LOAD_GATE_KEY_SUFFIXES;
 
-function wasVisible(storagePrefix: string): boolean {
-  const { acceptedValues } = EAGER_LOAD_GATE_KEY_SUFFIXES[VISIBLE_SUFFIX];
-  const raw = readStorage(`${storagePrefix}${VISIBLE_SUFFIX}`);
-  return raw !== null && (acceptedValues as readonly string[]).includes(raw);
+const EAGER_LOAD_FLAG_SUFFIXES = Object.keys(
+  EAGER_LOAD_GATE_KEY_SUFFIXES,
+) as EagerLoadFlagSuffix[];
+
+/**
+ * Probes EVERY flag signal the package's registry declares — not just
+ * `:visible`. `-open`, `:autoload`, `-elpath-enabled` and
+ * `-domtweaker-enabled` outlive a panel close (e.g. opening the panel once
+ * writes `:autoload = "auto"`, which is never cleared by closing it), so a
+ * visible-only gate leaves those features silently unrestored on the next
+ * page load. Iterating the registry also means a signal added by a future
+ * package version is picked up without touching this adapter.
+ *
+ * `requiredConfig` names a PanelConfig property that must be present for the
+ * signal to count (`-domtweaker-enabled` is meaningless without a
+ * `domTweaker` config), mirroring the package's own Astro host adapter.
+ */
+function hasActiveFlagSignal(cfg: PanelConfig): boolean {
+  return EAGER_LOAD_FLAG_SUFFIXES.some((suffix) => {
+    const { acceptedValues, requiredConfig } = EAGER_LOAD_GATE_KEY_SUFFIXES[suffix];
+    if (
+      requiredConfig !== null &&
+      (cfg as unknown as Record<string, unknown>)[requiredConfig] === undefined
+    ) {
+      return false;
+    }
+    const raw = readStorage(`${cfg.storagePrefix}${suffix}`);
+    return raw !== null && (acceptedValues as readonly string[]).includes(raw);
+  });
 }
 
 /**
@@ -263,7 +286,7 @@ export function mountPanel(): void {
   // Lazy-load gate — eagerly load the panel module when the user had it
   // open last session OR has persisted token overrides. Either signal
   // means the panel must boot before first paint to avoid an FOUT.
-  if (wasVisible(cfg.storagePrefix) || hasPersistedOverrides(cfg.storagePrefix)) {
+  if (hasActiveFlagSignal(cfg) || hasPersistedOverrides(cfg.storagePrefix)) {
     void loadPanelModule(state);
   }
 }

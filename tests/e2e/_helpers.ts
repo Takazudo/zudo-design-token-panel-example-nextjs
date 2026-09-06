@@ -6,6 +6,7 @@
  */
 
 import type { Page } from '@playwright/test';
+import { READABLE_STATE_KEY_SUFFIXES } from '@takazudo/zdtp/constants';
 
 // ---------------------------------------------------------------------------
 // Storage constants
@@ -13,6 +14,17 @@ import type { Page } from '@playwright/test';
 
 export const STORAGE_PREFIX = 'next-example-tokens';
 export const STORAGE_KEY_VISIBLE = `${STORAGE_PREFIX}:visible`;
+
+/**
+ * Every state-envelope version the installed package can still read. Taken
+ * from the package registry rather than hard-coded: 0.5.1 writes `-state-v3`,
+ * so a helper pinned to `-state-v2` would silently stop clearing overrides
+ * (and stale payloads then trip the eager-load gate in src/lib/mount-panel.ts,
+ * leaking state between specs).
+ */
+export const STORAGE_KEYS_STATE = Object.values(READABLE_STATE_KEY_SUFFIXES).map(
+  (suffix) => `${STORAGE_PREFIX}${suffix}`,
+);
 
 // ---------------------------------------------------------------------------
 // Route table (extracted from routes-smoke.spec.ts)
@@ -65,7 +77,8 @@ export async function mountPanel(page: Page, path = '/'): Promise<void> {
  * page.evaluate on the initial blank page throws a SecurityError).
  *
  * Clears:
- *   - localStorage: visible flag, state-v2 (token overrides), highlight-slots
+ *   - localStorage: visible flag, every readable state envelope (token
+ *     overrides), highlight-slots
  *   - sessionStorage: highlight-active
  */
 export async function clearPanelStorage(page: Page): Promise<void> {
@@ -76,10 +89,13 @@ export async function clearPanelStorage(page: Page): Promise<void> {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
   }
-  await page.evaluate((prefix) => {
-    localStorage.removeItem(`${prefix}:visible`);
-    localStorage.removeItem(`${prefix}-state-v2`);
-    localStorage.removeItem(`${prefix}-highlight-slots`);
-    sessionStorage.removeItem(`${prefix}-highlight-active`);
-  }, STORAGE_PREFIX);
+  await page.evaluate(
+    ({ prefix, stateKeys }) => {
+      localStorage.removeItem(`${prefix}:visible`);
+      for (const key of stateKeys) localStorage.removeItem(key);
+      localStorage.removeItem(`${prefix}-highlight-slots`);
+      sessionStorage.removeItem(`${prefix}-highlight-active`);
+    },
+    { prefix: STORAGE_PREFIX, stateKeys: STORAGE_KEYS_STATE },
+  );
 }

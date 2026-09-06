@@ -152,7 +152,11 @@ jobs:
       - name: Find a static asset to probe
         id: asset
         run: |
-          asset_path=$(find out/_next/static -type f | head -n 1 | sed 's#^out/##')
+          # `-print -quit`, not `| head -n 1`: head closing the pipe early can
+          # SIGPIPE find, and the runner's `bash -eo pipefail` would then kill
+          # the step with 141 instead of reaching the check below. `|| true`
+          # keeps a missing directory on the same reporting path as an empty one.
+          asset_path=$(find out/_next/static -type f -print -quit 2>/dev/null | sed 's#^out/##' || true)
           if [ -z "$asset_path" ]; then
             echo "::error::No file found under out/_next/static — build did not emit static assets."
             exit 1
