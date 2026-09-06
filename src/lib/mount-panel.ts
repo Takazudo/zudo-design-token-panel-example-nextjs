@@ -52,8 +52,8 @@
  * -----------------------
  * The suffixes and value rules that decide whether to eager-load come from
  * the package's `@takazudo/zdtp/constants` sub-entry, which is a standalone
- * module that does NOT import the panel — so a static import here costs a
- * few hundred bytes and keeps the panel itself lazy.
+ * module that does NOT import the panel — so this static import leaves First
+ * Load JS unchanged and keeps the panel itself lazy.
  *
  * Deriving them (rather than hard-coding `-state-v2`, as this adapter used
  * to) is the migration the package's 0.5.1 notes prescribe: the readable
@@ -121,9 +121,16 @@ function getAdapterState(win: AdapterWindow, key: string): DesignTokenPanelAdapt
   return state;
 }
 
+/**
+ * The one literal is used BOTH to index the registry and to build the key, so
+ * the accepted-values lookup can never drift from the key actually read; if
+ * the package ever drops the suffix, this stops compiling.
+ */
+const VISIBLE_SUFFIX = ':visible';
+
 function wasVisible(storagePrefix: string): boolean {
-  const { acceptedValues } = EAGER_LOAD_GATE_KEY_SUFFIXES[':visible'];
-  const raw = readStorage(`${storagePrefix}:visible`);
+  const { acceptedValues } = EAGER_LOAD_GATE_KEY_SUFFIXES[VISIBLE_SUFFIX];
+  const raw = readStorage(`${storagePrefix}${VISIBLE_SUFFIX}`);
   return raw !== null && (acceptedValues as readonly string[]).includes(raw);
 }
 
