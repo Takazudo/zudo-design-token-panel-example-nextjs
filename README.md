@@ -5,7 +5,7 @@ A minimal Next.js 15 (App Router) + React 19 app demonstrating
 Preact island via a `'use client'` boundary, plus apply-pipeline round-trip
 via the bin sidecar (`zdtp-server`).
 
-Live demo: <https://zudo-design-token-panel-example-nextjs.pages.dev/>
+Live demo: <https://zdtp-nextjs.zudolab.dev/>
 
 ## Sibling layout
 
