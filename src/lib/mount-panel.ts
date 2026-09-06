@@ -48,23 +48,25 @@
  * API re-installation is idempotent — re-assigning the same closures is
  * semantically a no-op — so leaving it ungated is fine.
  *
- * Storage-key formatters
- * ----------------------
- * `storageKey_visible(prefix)` and `storageKey_stateV2(prefix)` are not
- * publicly exported by the package's main entry (they live in
- * `src/config/panel-config.ts`). The formatters are trivial 1-line string
- * concatenations, so we replicate them here. The canonical definitions in
- * the package source MUST match these exactly:
+ * Eager-load gate signals
+ * -----------------------
+ * The suffixes and value rules that decide whether to eager-load come from
+ * the package's `@takazudo/zdtp/constants` sub-entry, which is a standalone
+ * module that does NOT import the panel — so a static import here costs a
+ * few hundred bytes and keeps the panel itself lazy.
  *
- *   storageKey_visible(cfg) -> `${cfg.storagePrefix}:visible`   (literal `:`)
- *   storageKey_stateV2(cfg) -> `${cfg.storagePrefix}-state-v2`  (literal `-`)
- *
- * Note the asymmetry: the visible-key uses `:` while every other derived
- * key uses `-`. It is a historical artifact preserved for storage-key
- * continuity — see the comment on `storageKey_visible` in the package.
+ * Deriving them (rather than hard-coding `-state-v2`, as this adapter used
+ * to) is the migration the package's 0.5.1 notes prescribe: the readable
+ * state-key registry self-updates at the next storage-format bump, so this
+ * gate cannot silently go stale again. The package deliberately ships the
+ * key set but NOT the content check — `valueRules` documents the semantics
+ * and `statePayloadActivates` below implements them.
  */
 
-import type { PanelConfig } from '@takazudo/zdtp';
+import {
+  EAGER_LOAD_GATE_KEY_SUFFIXES,
+  EAGER_LOAD_GATE_STATE_FAMILY,
+} from '@takazudo/zdtp/constants';
 import { panelConfig } from '../config/panel-config';
 
 // Mirrors the panel-module's main entry shape we lazy-import below.
@@ -94,14 +96,12 @@ interface AdapterWindow extends Window {
   [namespace: string]: unknown;
 }
 
-function storageKey_visible(cfg: PanelConfig): string {
-  // Mirrors packages/zudo-design-token-panel/src/config/panel-config.ts —
-  // the literal `:` separator (NOT `-`) is intentional and historical.
-  return `${cfg.storagePrefix}:visible`;
-}
-
-function storageKey_stateV2(cfg: PanelConfig): string {
-  return `${cfg.storagePrefix}-state-v2`;
+function readStorage(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
 }
 
 function getAdapterStateMap(win: AdapterWindow): AdapterStateMap {
@@ -121,20 +121,41 @@ function getAdapterState(win: AdapterWindow, key: string): DesignTokenPanelAdapt
   return state;
 }
 
-function wasVisible(visibleKey: string): boolean {
-  try {
-    return window.localStorage.getItem(visibleKey) === '1';
-  } catch {
-    return false;
-  }
+function wasVisible(storagePrefix: string): boolean {
+  const { acceptedValues } = EAGER_LOAD_GATE_KEY_SUFFIXES[':visible'];
+  const raw = readStorage(`${storagePrefix}:visible`);
+  return raw !== null && (acceptedValues as readonly string[]).includes(raw);
 }
 
-function hasPersistedOverrides(stateV2Key: string): boolean {
+/**
+ * Implements `EAGER_LOAD_GATE_STATE_FAMILY.valueRules`: a blank or JSON-null
+ * payload does not activate, empty objects/arrays do not activate, any other
+ * primitive does, and malformed JSON fails OPEN so the panel gets a chance to
+ * migrate or reject the stored payload rather than being skipped entirely.
+ */
+function statePayloadActivates(raw: string | null): boolean {
+  if (raw === null || raw === '') return false;
+  let parsed: unknown;
   try {
-    return window.localStorage.getItem(stateV2Key) !== null;
+    parsed = JSON.parse(raw);
   } catch {
-    return false;
+    return true;
   }
+  if (parsed === null) return false;
+  if (Array.isArray(parsed)) return parsed.length > 0;
+  if (typeof parsed === 'object') return Object.keys(parsed).length > 0;
+  return true;
+}
+
+/**
+ * Probes every state-envelope version the installed package can still read.
+ * Checking only the then-current `-state-v2` meant this gate went silent once
+ * the package migrated persisted state to v3/v4 and deleted the v2 key.
+ */
+function hasPersistedOverrides(storagePrefix: string): boolean {
+  return Object.values(EAGER_LOAD_GATE_STATE_FAMILY.keySuffixes).some((suffix) =>
+    statePayloadActivates(readStorage(`${storagePrefix}${suffix}`)),
+  );
 }
 
 /**
@@ -235,9 +256,7 @@ export function mountPanel(): void {
   // Lazy-load gate — eagerly load the panel module when the user had it
   // open last session OR has persisted token overrides. Either signal
   // means the panel must boot before first paint to avoid an FOUT.
-  const visibleKey = storageKey_visible(cfg);
-  const stateV2Key = storageKey_stateV2(cfg);
-  if (wasVisible(visibleKey) || hasPersistedOverrides(stateV2Key)) {
+  if (wasVisible(cfg.storagePrefix) || hasPersistedOverrides(cfg.storagePrefix)) {
     void loadPanelModule(state);
   }
 }
