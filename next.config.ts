@@ -32,10 +32,11 @@ import remarkGfm from 'remark-gfm';
  *
  * Deploy paths
  * ------------
- * This repo is deployed at the Cloudflare Pages root (`/`), so `basePath`
- * and `assetPrefix` are absent. `trailingSlash: true` is on so the static
- * export emits `<route>/index.html` files, which work cleanly under any
- * plain static host (no per-route rewrite rules required).
+ * This repo is deployed at the Cloudflare Workers Static Assets root (`/`),
+ * so `basePath` and `assetPrefix` are absent. `trailingSlash: true` is on so
+ * the static export emits `<route>/index.html` files, which work cleanly
+ * under any plain static host (no per-route rewrite rules required) and
+ * pairs with `html_handling = "auto-trailing-slash"` in wrangler.toml.
  *
  * Static export + dev-only API route
  * ----------------------------------
