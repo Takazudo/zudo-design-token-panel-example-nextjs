@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import '../src/styles/reset.css';
 import '../src/styles/tokens.css';
-import '@takazudo/zdtp/styles';
 
 import PanelBootstrap from './_components/PanelBootstrap';
 
@@ -10,10 +9,10 @@ import PanelBootstrap from './_components/PanelBootstrap';
  * Root layout for the Next.js example.
  *
  * Stylesheets land first because layout.tsx is the canonical Next App Router
- * entry for global CSS — the order matters because `tokens.css` defines the
- * `--nx-*` custom properties the panel rewrites at runtime, and the
- * panel package's own chrome CSS (`/styles`) lands afterwards so its rules
- * cascade above the host's reset.
+ * entry for global CSS — `tokens.css` defines the `--nx-*` custom properties
+ * the panel rewrites at runtime. The panel's own chrome CSS is not imported:
+ * the panel self-injects its stylesheet when it first mounts
+ * (PORTABLE-CONTRACT §4.1.4), so visitors who never open it never download it.
  *
  * <PanelBootstrap /> is the `'use client'` island that calls `mountPanel()`
  * from a `useEffect`. It returns `null` — the panel adapter appends its own
