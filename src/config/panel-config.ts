@@ -15,9 +15,11 @@
  * `next-example*` namespace so localStorage entries, exported JSON, and
  * modal classnames cannot collide with any other host's panel deployment.
  *
- * `applyEndpoint` is the bare relative path `/api/dev/apply` — kept WITHOUT
+ * `applyEndpoint` is the bare relative path `/api/dev/apply/` — kept WITHOUT
  * a basePath prefix per the deploy-paths spec, so the panel config stays
- * portable across deploy paths and matches the vite-react sibling exactly.
+ * portable across deploy paths. The trailing slash is the route's canonical
+ * URL under `trailingSlash: true` (next.config.ts); without it every Apply
+ * POST takes a 308 redirect hop first.
  * The Next.js API route at `app/api/dev/apply/route.dev.ts` (the `.dev.ts`
  * suffix excludes the file from `output: 'export'`; see `next.config.ts`
  * and the README) forwards the POST to the bin sidecar on port 24684, so
@@ -42,6 +44,6 @@ export const panelConfig: PanelConfig = {
   schemaId: 'next-example-design-tokens/v1',
   exportFilenameBase: 'next-example-design-tokens',
   tabs: defaultTabs,
-  applyEndpoint: '/api/dev/apply',
+  applyEndpoint: '/api/dev/apply/',
   applyRouting: scaffoldRouting,
 };
