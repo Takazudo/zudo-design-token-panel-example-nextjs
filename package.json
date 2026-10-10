@@ -12,7 +12,7 @@
     "predev": "lsof -ti:44326 | xargs kill 2>/dev/null; lsof -ti:24684 | xargs kill 2>/dev/null; true",
     "dev": "concurrently -k -n next,tokens-bin -c blue,green \"pnpm run _dev:next\" \"pnpm run _dev:tokens-bin\"",
     "_dev:next": "next dev --port 44326",
-    "_dev:tokens-bin": "zdtp-server --write-root . --routing scaffold.routing.json --port 24684 --allow-origin http://localhost:44326",
+    "_dev:tokens-bin": "zdtp-server --write-root . --routing missing.routing.json --port 24684 --allow-origin http://localhost:44326",
     "build": "NEXT_BUILD_TARGET=export next build",
     "start": "next start --port 44326",
     "typecheck": "tsc --noEmit",
