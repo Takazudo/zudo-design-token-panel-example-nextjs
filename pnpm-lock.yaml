@@ -25,14 +25,11 @@ importers:
         specifier: ^16.3.4
         version: 16.3.4(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.18)(react@19.2.8))
       '@takazudo/zdtp':
-        specifier: 0.5.1
-        version: 0.5.1(preact@10.29.8)
+        specifier: 0.8.6
+        version: 0.8.6
       next:
         specifier: ^15.5.25
         version: 15.5.25(@playwright/test@1.63.0)(@types/node@22.20.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      preact:
-        specifier: ^10.29.8
-        version: 10.29.8
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -558,12 +555,10 @@ packages:
   '@tailwindcss/browser@4.3.2':
     resolution: {integrity: sha512-R6hewP9HHwLAY88bFkgAYFIQMRGi9bqx6sR1anI3IThTJtwhPlAm4aHIzDKrnJ8Ct4M3d5A9PCsah8Z5+EjLiQ==}
 
-  '@takazudo/zdtp@0.5.1':
-    resolution: {integrity: sha512-zxKMKsgzWpEpmmj749vAnBryDzYI4tH4WDq7g2eMOuNpixPmLTq8hevMro5kNCZokybb/tjy0LpZhVX6tJ7U6w==}
+  '@takazudo/zdtp@0.8.6':
+    resolution: {integrity: sha512-powstLG6d4tkEroYbT6iAJk1Da4xAYS8+enW/bcn6IupkzQQf3agAtXrlJ8XVoWs43puOsCR5/hgpMDFKP3d3g==}
     engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
     hasBin: true
-    peerDependencies:
-      preact: ^10.29.1
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -1608,12 +1603,14 @@ snapshots:
 
   '@tailwindcss/browser@4.3.2': {}
 
-  '@takazudo/zdtp@0.5.1(preact@10.29.8)':
+  '@takazudo/zdtp@0.8.6':
     dependencies:
       '@tailwindcss/browser': 4.3.2
       culori: 4.0.2
       preact: 10.29.8
       tailwind-merge: 3.6.0
+    transitivePeerDependencies:
+      - preact-render-to-string
 
   '@types/debug@4.1.13':
     dependencies:

@@ -46,10 +46,10 @@
  * verbatim. We don't try to parse, transform, or validate the JSON — the
  * bin owns the schema, this route is a transport-level adapter.
  *
- * Endpoint: the panel POSTs to `applyEndpoint: '/api/dev/apply'` (no
- * basePath prefix). Next's basePath rewriting auto-adds the configured
- * `` prefix to client-issued requests in dev so this route
- * still resolves; the panel config stays portable across deploy paths.
+ * Endpoint: the panel POSTs to `applyEndpoint: '/api/dev/apply/'` (no
+ * basePath prefix; trailing slash because `trailingSlash: true` makes that
+ * the route's canonical URL), so the panel config stays portable across
+ * deploy paths.
  */
 
 const BIN_APPLY_URL = 'http://127.0.0.1:24684/apply';

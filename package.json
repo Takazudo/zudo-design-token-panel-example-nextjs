@@ -16,15 +16,15 @@
     "build": "NEXT_BUILD_TARGET=export next build",
     "start": "next start --port 44326",
     "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
     "test:apply-smoke": "node scripts/smoke-apply.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.3.4",
-    "@takazudo/zdtp": "0.5.1",
+    "@takazudo/zdtp": "0.8.6",
     "next": "^15.5.25",
-    "preact": "^10.29.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "remark-gfm": "^4.0.1"

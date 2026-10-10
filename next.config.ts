@@ -12,7 +12,8 @@ import remarkGfm from 'remark-gfm';
  * vanilla Next 15 App Router consumer that ships:
  *
  *   - real React 19 (no `react -> preact/compat` alias),
- *   - `preact` as a peer for the panel's own render tree, and
+ *   - no `preact` dependency of its own — the panel package owns the Preact
+ *     runtime for its render tree, and
  *   - a single PanelConfig assembled at the host (src/config/panel-config.ts).
  *
  * IMPORTANT: do NOT alias `react` -> `preact/compat`. The example must use

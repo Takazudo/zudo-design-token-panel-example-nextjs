@@ -32,7 +32,7 @@ const NAV_LINKS = [
 
 export default function Sidenav({ activePath = '/' }: SidenavProps) {
   return (
-    <nav className="nx-sidenav">
+    <nav className="nx-sidenav" aria-label="Main navigation">
       {NAV_LINKS.map((link) => {
         const isActive = activePath === link.path;
         return (
