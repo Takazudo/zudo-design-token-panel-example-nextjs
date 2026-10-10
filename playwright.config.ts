@@ -1,46 +1,62 @@
 /**
- * Playwright config for the Next.js example's apply-pipeline e2e spec.
+ * Playwright config for the Next.js example's browser suite.
  *
- * Local runs: webServer auto-starts the example's dev server.
- * On CI / when BASE_URL is supplied externally: the caller manages the
- * server lifecycle (so a separate workflow step can boot the bin sidecar
- * + Next dev server together via `pnpm dev`).
+ * The suite runs against the repo's real dev topology: `next dev`
+ * (`_dev:next`, port 44326) and the `zdtp-server` apply sidecar
+ * (`_dev:tokens-bin`, port 24684), the same two scripts `pnpm dev` composes.
+ * `next dev` is the only setup where the dev-only `/api/dev/apply` route
+ * exists, so it is the only one where Apply writes files. Each is its own
+ * webServer entry, so Playwright waits on both and fails the run if either
+ * one does not come up. `tests/e2e/global-setup.ts` then proves the listeners
+ * are this checkout's (sidecar writeRoot/routing, API-route wiring).
+ *
+ * `reuseExistingServer` only off CI: a local `pnpm dev` you keep running is
+ * adopted (and identity-checked by global setup); on CI a run either owns its
+ * servers or fails loudly on an occupied port.
+ *
+ * `workers: 1` + no parallelism: the apply spec rewrites
+ * `src/styles/tokens.css` on disk, and every spec shares one dev server.
  */
 
 import { defineConfig, devices } from '@playwright/test';
+import { ORIGIN, SIDECAR_ORIGIN } from './tests/e2e/origins';
 
-const hasExternalBaseUrl = Boolean(process.env.BASE_URL);
+const isCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: './tests/e2e',
+  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: false,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  forbidOnly: isCI,
+  retries: 0,
   workers: 1,
-  reporter: process.env.CI ? 'list' : 'html',
-  maxFailures: 0,
-  timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+  reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'html',
+  timeout: isCI ? 60 * 1000 : 30 * 1000,
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:44326',
-    trace: 'on-first-retry',
+    baseURL: ORIGIN,
+    trace: 'retain-on-failure',
     viewport: { width: 1280, height: 720 },
-    ignoreHTTPSErrors: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   projects: [
     {
-      name: 'apply-roundtrip',
+      name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer:
-    process.env.CI || hasExternalBaseUrl
-      ? undefined
-      : {
-          command: 'pnpm dev',
-          port: 44326,
-          reuseExistingServer: true,
-          timeout: 120 * 1000,
-        },
+  webServer: [
+    {
+      command: 'pnpm run _dev:next',
+      url: `${ORIGIN}/`,
+      reuseExistingServer: !isCI,
+      timeout: 120 * 1000,
+    },
+    {
+      command: 'pnpm run _dev:tokens-bin',
+      url: `${SIDECAR_ORIGIN}/healthz`,
+      reuseExistingServer: !isCI,
+      timeout: 60 * 1000,
+    },
+  ],
 });
