@@ -93,3 +93,5 @@ static export build (`output: 'export'` rejects dynamic API routes).
 | CSS-var family        | `--nx-*`                                    |
 | Next dev port         | `44326`                                     |
 | bin sidecar port      | `24684`                                     |
+
+<!-- throwaway: content-only change-detection proof -->
