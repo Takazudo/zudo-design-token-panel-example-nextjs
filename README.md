@@ -1,9 +1,11 @@
 # zudo-design-token-panel-example-nextjs
 
 A minimal Next.js 15 (App Router) + React 19 app demonstrating
-`@takazudo/zdtp` — host-config-driven panel mounted as a
-Preact island via a `'use client'` boundary, plus apply-pipeline round-trip
-via the bin sidecar (`zdtp-server`).
+`@takazudo/zdtp` — host-config-driven panel mounted from a `'use client'`
+boundary, plus apply-pipeline round-trip via the bin sidecar (`zdtp-server`).
+The panel renders with its own bundled zudo-react runtime (since zdtp 0.9.0;
+it no longer uses Preact), in its own root element outside the host's React 19
+tree.
 
 Live demo: <https://zdtp-nextjs.zudolab.dev/>
 
@@ -17,6 +19,12 @@ pnpm install
 
 The panel is the published npm package `@takazudo/zdtp`, pinned to an exact
 version in `package.json`.
+
+To see which panel version a page loaded, open the panel and read the shell's
+`data-zdtp-version` attribute (zdtp 0.9.1 and later), for example
+`document.querySelector('.tokenpanel-shell')?.dataset.zdtpVersion` in the
+browser console. The value is the declared `version` of the zdtp build that
+rendered the shell, and it is present only while the panel is open.
 
 ## Dev
 
@@ -63,7 +71,8 @@ pnpm test:apply-smoke   # smoke test for the bin sidecar (requires pnpm dev runn
 `webServer` (a `pnpm dev` you already have running is reused locally, never on
 CI). It covers a real panel-driven Apply that rewrites `src/styles/tokens.css`
 and restores it byte-for-byte, App Router soft navigation with back/forward,
-single-instance panel ownership, token edits reaching computed styles, and
+single-instance panel ownership, the shell's `data-zdtp-version` matching the
+installed package's `version`, token edits reaching computed styles, and
 zero console/page/network errors on every route. Run
 `pnpm exec playwright install chromium` once first.
 

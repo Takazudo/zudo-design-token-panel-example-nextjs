@@ -12,14 +12,15 @@ import remarkGfm from 'remark-gfm';
  * vanilla Next 15 App Router consumer that ships:
  *
  *   - real React 19 (no `react -> preact/compat` alias),
- *   - no `preact` dependency of its own — the panel package owns the Preact
- *     runtime for its render tree, and
+ *   - no `preact` dependency of its own — the panel package bundles its own
+ *     zudo-react runtime for its render tree (zdtp >= 0.9.0 no longer uses
+ *     Preact), and
  *   - a single PanelConfig assembled at the host (src/config/panel-config.ts).
  *
  * IMPORTANT: do NOT alias `react` -> `preact/compat`. The example must use
  * real React 19 — that is the entire point of the example. The panel mounts
- * as a Preact island under a `'use client'` boundary (app/_components/
- * PanelBootstrap.tsx); its own Preact runtime renders inside the panel root
+ * under a `'use client'` boundary (app/_components/
+ * PanelBootstrap.tsx); its own bundled runtime renders inside the panel root
  * element, fully isolated from the host React tree. Aliasing React would
  * collapse the two trees into one runtime and defeat the host-agnosticism
  * contract this example exists to prove.

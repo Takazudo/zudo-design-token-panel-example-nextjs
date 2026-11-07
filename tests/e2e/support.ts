@@ -12,6 +12,8 @@
  */
 
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ORIGIN, SIDECAR_ORIGIN } from './origins';
@@ -92,6 +94,28 @@ export function panelShell(page: Page): Locator {
   return page.locator('.tokenpanel-shell');
 }
 
+/** `version` of the @takazudo/zdtp package actually installed in node_modules, read at test time. */
+export function installedZdtpVersion(): string {
+  const pkgPath = createRequire(import.meta.url).resolve('@takazudo/zdtp/package.json');
+  const { version } = JSON.parse(readFileSync(pkgPath, 'utf8')) as { version?: unknown };
+  if (typeof version !== 'string' || version === '') {
+    throw new Error(`no version in ${pkgPath}`);
+  }
+  return version;
+}
+
+/**
+ * The mounted shell carries `data-zdtp-version` (zdtp >= 0.9.1), inlined from
+ * the package.json of the build that rendered it. It must name the installed
+ * package, so a stale or duplicate panel bundle shows up as a mismatch.
+ */
+export async function expectShellVersionMarker(page: Page): Promise<void> {
+  const shell = panelShell(page);
+  await expect(shell).toHaveCount(1);
+  await expect(shell).toBeVisible();
+  await expect(shell).toHaveAttribute('data-zdtp-version', installedZdtpVersion());
+}
+
 /**
  * The host's own trigger in the AppShell topbar, not the console API. Scoped
  * to the banner because the prose page renders a second copy in its body.
@@ -134,13 +158,17 @@ export async function navigateViaSidenav(page: Page, label: string, path: string
 
 /**
  * Exactly one panel instance: one panel root, one set of the panel's
- * document-level mounts, one injected stylesheet, and at most one shell.
+ * document-level mounts (no DOM Tweaker mount, which this host does not
+ * configure), one injected stylesheet, and at most one shell.
  */
 export async function expectSinglePanelInstance(page: Page, shellCount: 0 | 1): Promise<void> {
   await expect(page.locator(`[id="${PANEL_ROOT_ID}"]`)).toHaveCount(1);
-  for (const mount of ['highlight', 'elpath', 'element-inspect', 'domtweaker']) {
+  for (const mount of ['highlight', 'elpath', 'element-inspect']) {
     await expect(page.locator(`[id="tokenpanel-${mount}-mount"]`)).toHaveCount(1);
   }
+  // zdtp >= 0.9.0 creates the DOM Tweaker mount only when PanelConfig.domTweaker
+  // is set; src/config/panel-config.ts does not set it, so there must be none.
+  await expect(page.locator('[id="tokenpanel-domtweaker-mount"]')).toHaveCount(0);
   // The stylesheet the panel self-injects on first mount (PORTABLE-CONTRACT §4.1.4).
   await expect(page.locator('style#zudo-design-token-panel-styles')).toHaveCount(1);
   await expect(panelShell(page)).toHaveCount(shellCount);
