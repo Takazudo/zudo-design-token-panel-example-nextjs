@@ -12,12 +12,16 @@
  * panel root (plus one set of the panel's document-level mounts) — the root
  * layout's PanelBootstrap mounts it once, outside the React tree, and route
  * changes must neither drop nor duplicate it.
+ *
+ * Version marker: the mounted shell's `data-zdtp-version` must equal the
+ * `version` of the installed node_modules/@takazudo/zdtp, read at test time.
  */
 
 import type { Page } from '@playwright/test';
 import {
   closeViaHeader,
   expect,
+  expectShellVersionMarker,
   expectSinglePanelInstance,
   navigateViaSidenav,
   openViaHeader,
@@ -61,6 +65,7 @@ test('sidenav navigation and back/forward are soft swaps that keep one open pane
 }) => {
   await page.goto('/');
   await openViaHeader(page);
+  await expectShellVersionMarker(page);
   await setMarker(page);
 
   await navigateViaSidenav(page, 'About', '/about');
@@ -92,6 +97,7 @@ test('sidenav navigation and back/forward are soft swaps that keep one open pane
   await expectSameDocument(page);
   await expectSinglePanelInstance(page, 1);
   await expect(panelShell(page)).toBeVisible();
+  await expectShellVersionMarker(page);
 });
 
 test('repeated open/close across navigation never duplicates the panel', async ({ page }) => {
@@ -119,6 +125,7 @@ test('panel visibility persists across navigation and reload', async ({ page }) 
   await page.reload();
   await expect(panelShell(page)).toBeVisible();
   await expectSinglePanelInstance(page, 1);
+  await expectShellVersionMarker(page);
 
   await closeViaHeader(page);
   await navigateViaSidenav(page, 'About', '/about');

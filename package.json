@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Next.js 15 + React 19 (App Router) example app demonstrating @takazudo/zdtp — host-config-driven panel mounted as a Preact island via a 'use client' boundary, plus apply-pipeline round-trip via the bin sidecar through a Next API route.",
+  "description": "Next.js 15 + React 19 (App Router) example app demonstrating @takazudo/zdtp — host-config-driven panel mounted from a 'use client' boundary (the panel renders with its own bundled zudo-react runtime), plus apply-pipeline round-trip via the bin sidecar through a Next API route.",
   "packageManager": "pnpm@10.33.2",
   "engines": {
     "node": ">=22.12.0"
@@ -23,7 +23,7 @@
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.3.4",
-    "@takazudo/zdtp": "0.8.6",
+    "@takazudo/zdtp": "0.9.1",
     "next": "^15.5.25",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

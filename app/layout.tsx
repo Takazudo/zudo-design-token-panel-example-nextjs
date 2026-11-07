@@ -24,7 +24,7 @@ import PanelBootstrap from './_components/PanelBootstrap';
 export const metadata: Metadata = {
   title: 'Next.js Example — Design Token Panel',
   description:
-    'Next.js 15 + React 19 example app for @takazudo/zdtp — host-config-driven panel mounted as a Preact island via a "use client" boundary.',
+    'Next.js 15 + React 19 example app for @takazudo/zdtp — host-config-driven panel mounted from a "use client" boundary.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

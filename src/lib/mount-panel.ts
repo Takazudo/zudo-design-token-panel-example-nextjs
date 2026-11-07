@@ -5,7 +5,7 @@
  * (`@takazudo/zdtp/astro/host-adapter`) that runs from a
  * per-page `<script>` block in `DesignTokenPanelHost.astro`. Next.js — like
  * the Vite + React sibling example — has no equivalent host component. The
- * panel is mounted as a Preact island from a `'use client'` React component
+ * panel is mounted from a `'use client'` React component
  * (`app/_components/PanelBootstrap.tsx`) whose `useEffect` calls
  * `mountPanel()`. The adapter logic is therefore ported here, with the body
  * deliberately mirrored from `examples/vite-react/src/lib/mount-panel.ts`
